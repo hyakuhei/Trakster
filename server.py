@@ -1,5 +1,6 @@
 from googlemaps import GoogleMaps
 from flask import Flask, request, redirect, Response
+from math import *
 import twilio.twiml
 import random
 app = Flask(__name__)
@@ -61,6 +62,25 @@ def printRequest(req):
 #	for key in req.__dict__.keys():
 #		print "%s : %s" % (key, req.__dict__[key])
 
+def haversine(pos1, pos2):
+    lat1 = float(pos1['lat'])
+    long1 = float(pos1['long'])
+    lat2 = float(pos2['lat'])
+    long2 = float(pos2['long'])
+
+    degree_to_rad = float(pi / 180.0)
+
+    d_lat = (lat2 - lat1) * degree_to_rad
+    d_long = (long2 - long1) * degree_to_rad
+
+    a = pow(sin(d_lat / 2), 2) + cos(lat1 * degree_to_rad) * cos(lat2 * degree_to_rad) * pow(sin(d_long / 2), 2)
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    km = 6367 * c
+    mi = 3956 * c
+
+    return {"km":km, "miles":mi}
+
+
 @app.route("/")
 @app.route("/index")
 def index():
@@ -76,10 +96,15 @@ def index():
 				</ul>""" % random.randint(0,65535)
 
 	resp += "<h3>Tracker Entries</h3>"
-	resp+="<table><tr><td>Time</td><td>latitude</td><td>longitude</td><td>battery</td><td>signal</td></tr>"
+	resp+="<table><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance</td></tr>"
+	prev = None
 	for entry in entries:
-		resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (entry['time'],entry['latitude'],entry['longitude'],entry['battery'],entry['signal'])
+		distance = {'km':0}
+		if prev != None:
+			distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
 		
+		resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td></tr>" % (entry['time'],entry['latitude'],entry['longitude'],entry['battery'],entry['signal'],distance['km'])
+		prev = entry
 	resp += "</table>"
 	resp += "</body></html>"	
 	return resp, 200
@@ -107,24 +132,6 @@ def kmlFile():
 	kml += kmlFooter
 	return kml
 	
-def haversine(pos1, pos2):
-    lat1 = float(pos1['lat'])
-    long1 = float(pos1['long'])
-    lat2 = float(pos2['lat'])
-    long2 = float(pos2['long'])
-
-    degree_to_rad = float(pi / 180.0)
-
-    d_lat = (lat2 - lat1) * degree_to_rad
-    d_long = (long2 - long1) * degree_to_rad
-
-    a = pow(sin(d_lat / 2), 2) + cos(lat1 * degree_to_rad) * cos(lat2 * degree_to_rad) * pow(sin(d_long / 2), 2)
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    km = 6367 * c
-    mi = 3956 * c
-
-    return {"km":km, "miles":mi}
-
 
 
 @app.route("/incoming", methods=['GET'])
