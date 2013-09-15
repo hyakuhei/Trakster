@@ -80,7 +80,27 @@ def haversine(pos1, pos2):
 
     return {"km":km, "miles":mi}
 
+def deg_to_dms(degs,latlong=''):
+    deg = float(degs)
+    d = int(deg)
+    md = abs(deg - d) * 60
+    m = int(md)
+    sd = (md - m) * 60
 
+    dstr = '%i' % d
+    if latlong == 'lat':
+	if d < 0:
+	    dstr = 'S %i' % (d * -1)
+	else:
+	    dstr = 'N %i' % d
+    if latlong == 'long':
+        if d < 0:
+            dstr = 'W %i' % (d * -1)
+        else:
+            dstr = 'E %i' % d
+    	
+    return "%s*%i.%i" % (dstr,m,sd)
+		
 @app.route("/")
 @app.route("/index")
 def index():
@@ -91,7 +111,7 @@ def index():
 			<body>
 				<h2>View Track</h2>
 				<ul>
-					<li><a href='https://maps.google.co.uk/maps?q=http://15.185.254.46/kml/%i'>View track in Google Maps</a><Note, if the output needs refreshing, add an integer to the web address that appears in the search bar of google maps</li>
+					<li><a href='https://maps.google.co.uk/maps?q=http://15.185.254.46/kml/%i'>View track in Google Maps</a></li>
 					<li><a href='http://15.185.254.46/kml'>Download KML to view in Google Earth</a></li>
 				</ul>""" % random.randint(0,65535)
 
@@ -103,8 +123,15 @@ def index():
 		if prev != None:
 			distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
 		
-		resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td></tr>" % (entry['time'],entry['latitude'],entry['longitude'],entry['battery'],entry['signal'],distance['km'])
+		resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td></tr>" % (
+			entry['time'],
+			deg_to_dms(entry['latitude'],latlong='lat'),
+			deg_to_dms(entry['longitude'],latlong='long'),
+			entry['battery'],
+			entry['signal'],
+			distance['km'])
 		prev = entry
+
 	resp += "</table>"
 	resp += "</body></html>"	
 	return resp, 200
