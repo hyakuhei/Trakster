@@ -66,7 +66,15 @@ def printRequest(req):
 def index():
 	random.seed()
 	printRequest(request)
-	resp = "<html><head>GSM Tracker</head><body><h2>View Track</h2><ul><li><a href='https://maps.google.co.uk/maps?q=http://15.185.254.46/kml/%i'>View track in Google Maps</a></li>Note, if the output needs refreshing, add an integer to the web address that appears in the search bar of google maps<li><a href='http://15.185.254.46/kml'>Download KML to view in Google Earth</a></li></ul>" % random.randint(0,65535)
+	resp = """<html>
+			<head>GSM Tracker</head>
+			<body>
+				<h2>View Track</h2>
+				<ul>
+					<li><a href='https://maps.google.co.uk/maps?q=http://15.185.254.46/kml/%i'>View track in Google Maps</a><Note, if the output needs refreshing, add an integer to the web address that appears in the search bar of google maps</li>
+					<li><a href='http://15.185.254.46/kml'>Download KML to view in Google Earth</a></li>
+				</ul>""" % random.randint(0,65535)
+
 	resp += "<h3>Tracker Entries</h3>"
 	resp+="<table><tr><td>Time</td><td>latitude</td><td>longitude</td><td>battery</td><td>signal</td></tr>"
 	for entry in entries:
