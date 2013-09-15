@@ -116,7 +116,7 @@ def index():
 				</ul>""" % random.randint(0,65535)
 
 	resp += "<h3>Tracker Entries</h3>"
-	resp+="<table><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance</td></tr>"
+	resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance</td></tr>"
 	prev = None
 	for entry in entries:
 		distance = {'km':0}
@@ -143,14 +143,22 @@ def addMeat(body):
 	entry = {}
 	entry['time'] = x[0]
 	entry['coord'] = x[1]
-	entry['latitude'] = entry['coord'].split(',')[0]
-	entry['longitude'] = entry['coord'].split(',')[1]
+	entry['latitude'] = x[1].split(',')[0]
+	entry['longitude'] = x[1].split(',')[1]
 	entry['battery'] = x[2]
 	entry['signal'] = x[3]
 
 	entries.append(entry)
 
-	kmlMeat.append(kmlPlacemark % ((len(kmlMeat) +1),entry['latitude'],entry['longitude'],entry['time'],	entry['battery'],entry['signal'],entry['longitude'],entry['latitude']))
+	kmlMeat.append(kmlPlacemark % (
+		(len(kmlMeat) +1),
+		entry['latitude'],
+		entry['longitude'],
+		entry['time'],
+		entry['battery'],
+		entry['signal'],
+		entry['longitude'],
+		entry['latitude']))
 
 def kmlFile():
 	kml = kmlHeader
@@ -159,8 +167,6 @@ def kmlFile():
 	kml += kmlFooter
 	return kml
 	
-
-
 @app.route("/incoming", methods=['GET'])
 def incoming():
 #	printRequest(request)
