@@ -100,6 +100,16 @@ def deg_to_dms(degs,latlong=''):
             dstr = 'E %i' % d
     
     return "%s*%i.%i" % (dstr,m,sd)
+
+#Simple function that takes the first field and tries to read it as MS time
+#IF that fails it just returns the string
+def trytime(timeStr):
+    try:
+        timex = datetime.datetime.fromtimestamp(int(timeStr)/1000)
+        return timex.strftime("%d/%m/%y - %H:%M:%S")
+    except:
+        #just keep the string the same as we received
+        return timeStr
     
 @app.route("/")
 @app.route("/index")
@@ -124,7 +134,7 @@ def index():
             distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
         
         resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td></tr>" % (
-            entry['time'],
+            trytime(entry['time']),
             deg_to_dms(entry['latitude'],latlong='lat'),
             deg_to_dms(entry['longitude'],latlong='long'),
             entry['battery'],
@@ -192,6 +202,7 @@ def getkmlrand(rand):
 @app.route("/clean",methods=['GET'])
 def clean():
     kmlMeat = []
+    entries = []
     return 'Cleaned\n',200
 
 if __name__ == '__main__':
