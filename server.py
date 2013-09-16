@@ -160,11 +160,12 @@ def addMeat(body):
 
     entries.append(entry)
 
+    #This is where the string replacement happens which is later appended into the KML file
     kmlMeat.append(kmlPlacemark % (
         (len(kmlMeat) +1),
         entry['latitude'],
         entry['longitude'],
-        entry['time'],
+        trytime(entry['time']),
         entry['battery'],
         entry['signal'],
         entry['longitude'],
