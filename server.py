@@ -126,20 +126,23 @@ def index():
                 </ul>""" % random.randint(0,65535)
 
     resp += "<h3>Tracker Entries</h3>"
-    resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance</td></tr>"
+    resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance From Last Point KM</td><td>Accumlative Distance NM</td></tr>"
     prev = None
+    nmiles = 0.0
     for entry in entries:
-        distance = {'km':0}
+        distance = {'km':0,'nmiles':0}
         if prev != None:
             distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
         
-        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td></tr>" % (
+        nmiles += distance['nmiles']
+        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f<td></tr>" % (
             trytime(entry['time']),
             deg_to_dms(entry['latitude'],latlong='lat'),
             deg_to_dms(entry['longitude'],latlong='long'),
             entry['battery'],
             entry['signal'],
-            distance['km'])
+            distance['km'],
+            nmiles)
         prev = entry
 
     resp += "</table>"
