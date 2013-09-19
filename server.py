@@ -4,6 +4,9 @@ import twilio.twiml
 import random,datetime
 app = Flask(__name__)
 
+MSHOUR = 3600000
+KNOT = 0.539957
+
 kmlHeader = """<?xml version="1.0" encoding="utf-8"?>
 <kml xmlns="http://earth.google.com/kml/2.2">
 <Document>
@@ -41,6 +44,11 @@ kmlPlacemark = """
         <Data name="KM from prev position">
           <value>
             %.3f km
+          </value>
+        </Data>
+        <Data name="SOG">
+          <value>
+            %.2f knts
           </value>
         </Data>
         <Data name="Accumulative NM">
@@ -137,15 +145,16 @@ def index():
                 </ul>""" % random.randint(0,65535)
 
     resp += "<h3>Tracker Entries</h3>"
-    resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance From Last Point KM</td><td>Accumlative Distance NM</td></tr>"
+    resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance From Last Point KM</td><td>Speed Knots</td><td>Accumlative Distance NM</td></tr>"
     for entry in entries:
-        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f nm</td></tr>" % (
+        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.2f knts</td><td>%.3f nm</td></tr>" % (
             trytime(entry['time']),
             deg_to_dms(entry['latitude'],latlong='lat'),
             deg_to_dms(entry['longitude'],latlong='long'),
             entry['battery'],
             entry['signal'],
             entry['fromLast'],
+            entry['speed'],
             entry['accumulative'])
         prev = entry
 
@@ -167,11 +176,13 @@ def addMeat(body):
     if len(entries) == 0:
         entry['fromLast'] = 0.0
         entry['accumulative'] = 0.0
+        entry['speed']=0.0
     else:
         prev = entries[-1]
         distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
         entry['fromLast'] = distance['km']
         entry['accumulative'] = prev['accumulative'] + distance['nmiles']
+        entry['speed'] = ((distance['km'] / (float(entry['time']) - float(prev['time']))) * (MSHOUR)) * KNOT
 
     entries.append(entry)
 
@@ -184,6 +195,7 @@ def addMeat(body):
         entry['battery'],
         entry['signal'],
         entry['fromLast'],
+        entry['speed'],
         entry['accumulative'],
         entry['longitude'],
         entry['latitude']))
