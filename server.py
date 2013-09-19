@@ -38,12 +38,12 @@ kmlPlacemark = """
             %s
           </value>
         </Data>
-        <Data name="KM from last data point">
+        <Data name="KM from prev position">
           <value>
             %.3f km
           </value>
         </Data>
-        <Data name="NM from last data point">
+        <Data name="Accumulative NM">
           <value>
             %.3f nm
           </value>
@@ -63,6 +63,7 @@ kmlFooter = """
 """
 
 kmlMeat = []
+accumulative = 0.0
 entries = []
 
 def printRequest(req):
@@ -132,27 +133,20 @@ def index():
                 <h2>View Track</h2>
                 <ul>
                     <li><a href='https://maps.google.co.uk/maps?q=http://15.185.254.46/kml/%i'>View track in Google Maps</a></li>
-                    <li><a href='http://15.185.254.46/kml'>Download KML to view in Google Earth</a></li>
+                    <li><a href='/kml'>Download KML to view in Google Earth</a></li>
                 </ul>""" % random.randint(0,65535)
 
     resp += "<h3>Tracker Entries</h3>"
     resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance From Last Point KM</td><td>Accumlative Distance NM</td></tr>"
-    prev = None
-    nmiles = 0.0
     for entry in entries:
-        distance = {'km':0,'nmiles':0}
-        if prev != None:
-            distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
-        
-        nmiles += distance['nmiles']
-        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f</td></tr>" % (
+        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f nm</td></tr>" % (
             trytime(entry['time']),
             deg_to_dms(entry['latitude'],latlong='lat'),
             deg_to_dms(entry['longitude'],latlong='long'),
             entry['battery'],
             entry['signal'],
-            distance['km'],
-            nmiles)
+            entry['fromLast'],
+            entry['accumulative'])
         prev = entry
 
     resp += "</table>"
@@ -170,17 +164,27 @@ def addMeat(body):
     entry['longitude'] = x[1].split(',')[1]
     entry['battery'] = x[2]
     entry['signal'] = x[3]
+    if len(entries) == 0:
+        entry['fromLast'] = 0.0
+        entry['accumulative'] = 0.0
+    else:
+        prev = entries[-1]
+        distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
+        entry['fromLast'] = distance['km']
+        entry['accumulative'] = prev['accumulative'] + distance['nmiles']
 
     entries.append(entry)
 
     #This is where the string replacement happens which is later appended into the KML file
     kmlMeat.append(kmlPlacemark % (
         (len(kmlMeat) +1),
-        entry['latitude'],
-        entry['longitude'],
+        deg_to_dms(entry['latitude']),
+        deg_to_dms(entry['longitude']),
         trytime(entry['time']),
         entry['battery'],
         entry['signal'],
+        entry['fromLast'],
+        entry['accumulative'],
         entry['longitude'],
         entry['latitude']))
 
