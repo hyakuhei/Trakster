@@ -144,7 +144,11 @@ def index():
                     <li><a href='/kml'>Download KML to view in Google Earth</a></li>
                 </ul>""" % random.randint(0,65535)
 
-    resp += "<h3>Tracker Entries</h3>"
+    resp += "<h2>Server Options</h2>"
+    resp += """<ul>
+                    <li><a href='/clean' onclick=\"return confirm('Delete All GPS Entries?')\">Clear GPS tracks</a></li>
+                </ul>"""
+    resp += "<h2>Tracker Entries</h2>"
     resp+="<table border=1><tr><td>Time</td><td>Latitude</td><td>Longitude</td><td>Battery</td><td>Signal</td><td>Distance From Last Point KM</td><td>Speed Knots</td><td>Accumlative Distance NM</td></tr>"
     for entry in entries:
         resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.2f knts</td><td>%.3f nm</td></tr>" % (
