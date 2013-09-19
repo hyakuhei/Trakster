@@ -38,6 +38,16 @@ kmlPlacemark = """
             %s
           </value>
         </Data>
+        <Data name="KM from last data point">
+          <value>
+            %.3f km
+          </value>
+        </Data>
+        <Data name="NM from last data point">
+          <value>
+            %.3f nm
+          </value>
+        </Data>
       </ExtendedData>
       <Point>
         <coordinates>
@@ -135,7 +145,7 @@ def index():
             distance = haversine({'lat':prev['latitude'],'long':prev['longitude']},{'lat':entry['latitude'],'long':entry['longitude']}) 
         
         nmiles += distance['nmiles']
-        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f<td></tr>" % (
+        resp+="<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%.3f km</td><td>%.3f</td></tr>" % (
             trytime(entry['time']),
             deg_to_dms(entry['latitude'],latlong='lat'),
             deg_to_dms(entry['longitude'],latlong='long'),
