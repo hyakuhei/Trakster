@@ -235,9 +235,11 @@ def getkmlrand(rand):
 
 @app.route("/clean",methods=['GET'])
 def clean():
+    global kmlMeat
+    global entries
     kmlMeat = []
     entries = []
-    return index()
+    return redirect('/')
 
 if __name__ == '__main__':
     app.run(debug = True, host='0.0.0.0', port=80)
